@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Editor de texto online com recursos de formatação e salvamento automático">
+    <title>Editor de Texto</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container" role="application" aria-label="Editor de texto">
+        <div class="toolbar" role="toolbar" aria-label="Ferramentas de formatação">
+            <div class="toolbar-group">
+                <button onclick="formatText('bold')" title="Negrito (Ctrl+B)" aria-label="Negrito" data-tooltip="Negrito (Ctrl+B)">
+                    <i class="fas fa-bold" aria-hidden="true"></i>
+                </button>
+                <button onclick="formatText('italic')" title="Itálico (Ctrl+I)" aria-label="Itálico" data-tooltip="Itálico (Ctrl+I)">
+                    <i class="fas fa-italic" aria-hidden="true"></i>
+                </button>
+                <button onclick="formatText('underline')" title="Sublinhado (Ctrl+U)" aria-label="Sublinhado" data-tooltip="Sublinhado (Ctrl+U)">
+                    <i class="fas fa-underline" aria-hidden="true"></i>
+                </button>
+                <button onclick="formatText('strikeThrough')" title="Tachado" aria-label="Tachado" data-tooltip="Tachado">
+                    <i class="fas fa-strikethrough" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <select id="headingSelect" onchange="formatHeading()" aria-label="Estilo de título" data-tooltip="Escolha o estilo do texto">
+                    <option value="">Texto normal</option>
+                    <option value="h1">Título 1</option>
+                    <option value="h2">Título 2</option>
+                    <option value="h3">Título 3</option>
+                </select>
+                <button onclick="createList('ul')" title="Lista não ordenada" aria-label="Criar lista com marcadores" data-tooltip="Lista com marcadores">
+                    <i class="fas fa-list-ul" aria-hidden="true"></i>
+                </button>
+                <button onclick="createList('ol')" title="Lista ordenada" aria-label="Criar lista numerada" data-tooltip="Lista numerada">
+                    <i class="fas fa-list-ol" aria-hidden="true"></i>
+                </button>
+                <button onclick="addCheckList()" title="Lista de verificação" aria-label="Adicionar lista de verificação" data-tooltip="Lista de verificação">
+                    <i class="fas fa-check-square" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <button onclick="addCodeBlock()" title="Bloco de código" aria-label="Inserir bloco de código" data-tooltip="Bloco de código">
+                    <i class="fas fa-code" aria-hidden="true"></i>
+                </button>
+                <button onclick="addQuote()" title="Citação" aria-label="Inserir citação" data-tooltip="Citação">
+                    <i class="fas fa-quote-right" aria-hidden="true"></i>
+                </button>
+                <button onclick="addTaskCard()" title="Card de Tarefas" aria-label="Inserir card de tarefas" data-tooltip="Card de Tarefas">
+                    <i class="fas fa-tasks" aria-hidden="true"></i>
+                </button>
+                <button onclick="addLink()" title="Adicionar link (Ctrl+K)" aria-label="Inserir link" data-tooltip="Adicionar link (Ctrl+K)">
+                    <i class="fas fa-link" aria-hidden="true"></i>
+                </button>
+                <input type="color" id="colorPicker" onchange="changeTextColor(this.value)" title="Cor do texto" aria-label="Selecionar cor do texto" data-tooltip="Escolher cor do texto">
+            </div>
+
+            <div class="toolbar-group">
+                <button onclick="undo()" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" data-tooltip="Desfazer (Ctrl+Z)">
+                    <i class="fas fa-undo" aria-hidden="true"></i>
+                </button>
+                <button onclick="redo()" title="Refazer (Ctrl+Y)" aria-label="Refazer" data-tooltip="Refazer (Ctrl+Y)">
+                    <i class="fas fa-redo" aria-hidden="true"></i>
+                </button>
+                <button onclick="exportContent('html')" title="Exportar como HTML" aria-label="Exportar como HTML" data-tooltip="Exportar como HTML">
+                    <i class="fas fa-file-code" aria-hidden="true"></i>
+                </button>
+                <button onclick="exportContent('txt')" title="Exportar como texto" aria-label="Exportar como texto puro" data-tooltip="Exportar como texto">
+                    <i class="fas fa-file-alt" aria-hidden="true"></i>
+                </button>
+                <button onclick="toggleTheme()" class="theme-toggle" aria-label="Alternar tema claro/escuro" data-tooltip="Alternar tema">
+                    <i class="fas fa-moon" id="themeIcon" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="editor" 
+             contenteditable="true" 
+             class="editor-content" 
+             role="textbox" 
+             aria-multiline="true" 
+             aria-label="Área de edição de texto" 
+             data-placeholder="Comece a digitar aqui..."
+             spellcheck="true"
+             lang="pt-BR">
+        </div>
+
+        <div class="status-bar" role="status" aria-live="polite">
+            <div class="status-group">
+                <span id="wordCount" aria-label="Contagem de palavras">0 palavras</span>
+                <span id="charCount" aria-label="Contagem de caracteres">0 caracteres</span>
+            </div>
+            <div class="status-group">
+                <span id="saveStatus" aria-label="Status do salvamento">Salvo</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal personalizado -->
+    <div id="customModal" class="modal" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle"></h3>
+                <button class="close-modal" onclick="closeModal()" aria-label="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="linkForm" class="modal-form">
+                    <div class="form-group">
+                        <label for="linkUrl">URL:</label>
+                        <input type="url" id="linkUrl" placeholder="https://" class="modal-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="linkText">Texto do link:</label>
+                        <input type="text" id="linkText" placeholder="Digite o texto do link" class="modal-input">
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" id="newTab" checked>
+                        <label for="newTab">Abrir em nova aba</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="modal-btn modal-confirm" onclick="confirmModal()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu flutuante para links -->
+    <div id="linkMenu" class="link-menu" role="menu" aria-label="Opções de link">
+        <div class="link-menu-option" data-action="same-tab" role="menuitem">
+            <i class="fas fa-arrow-right"></i>
+            Abrir na mesma aba
+        </div>
+        <div class="link-menu-option" data-action="new-tab" role="menuitem">
+            <i class="fas fa-external-link-alt"></i>
+            Abrir em nova aba
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

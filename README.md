@@ -55,10 +55,4 @@ NoteWisp é um editor de texto online com recursos avançados de formatação e 
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
 
-## Licença
-
-Este projeto está licenciado sob a Licença MIT. Veja o arquivo LICENSE para mais detalhes.
-
----
-
 Desenvolvido por [HenriSoft](https://github.com/HenriMattos)
